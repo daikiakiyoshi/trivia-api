@@ -135,6 +135,10 @@ def create_app(test_config=None):
         new_category = body.get('category', None)
         new_difficulty = body.get('difficulty', None)
 
+        if (new_question is None or new_answer is None
+            or new_category is None or new_difficulty is None):
+            abort(404)
+
         try:
             question = Question(question=new_question, answer=new_answer,
                                 category=new_category, difficulty=new_difficulty)
@@ -157,6 +161,26 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     '''
+    @app.route('/searchQuestions', methods=['POST'])
+    def search_question():
+        body = request.get_json()
+        search_word = body.get('searchTerm', None)
+        try:
+            search_result = Question.query.filter(Question.question.ilike(f'%{search_word}%')).all()
+            search_result_formatted = [question.format() for question in search_result]
+
+            if len(search_result_formatted) == 0:
+                abort(404)
+
+            return jsonify({
+                'success': True,
+                'questions': search_result_formatted,
+                'total_questions': len(Question.query.all()),
+                'current_category': None
+            })
+
+        except:
+            abort(422)
 
     '''
     @TODO:
