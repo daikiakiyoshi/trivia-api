@@ -70,14 +70,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['deleted'], 2)
         self.assertEqual(question, None)
 
-    # Need to fix this.
-    def test_404_delete_queston(self):
-        res = self.client().delete('/questions/1000') # id 1000 does not exist in the test data
+    def test_422_delete_queston(self):
+        res = self.client().delete('/questions/1000')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.status_code, 422)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], "Not Found")
+        self.assertEqual(data['message'], "Unprocessable entity")
 
     def test_create_question(self):
         res = self.client().post('/questions', json=self.new_question)
