@@ -76,7 +76,7 @@ def create_app(test_config=None):
             categories = Category.query.order_by(Category.id).all()
             categories_formatted = {category.id:category.type for category in categories}
 
-            if len(questions) == 0 or len(categories) == 0:
+            if len(current_questions) == 0 or len(categories_formatted) == 0:
                 abort(404)
 
             return jsonify({
@@ -135,10 +135,6 @@ def create_app(test_config=None):
         new_category = body.get('category', None)
         new_difficulty = body.get('difficulty', None)
 
-        if (new_question is None or new_answer is None
-            or new_category is None or new_difficulty is None):
-            abort(404)
-
         try:
             question = Question(question=new_question, answer=new_answer,
                                 category=new_category, difficulty=new_difficulty)
@@ -191,10 +187,11 @@ def create_app(test_config=None):
     category to be shown.
     '''
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
-    def get_by_catgory(category_id):
+    def get_by_category(category_id):
         try:
             questions = Question.query.filter(Question.category == category_id).all()
             questions_formatted = [question.format() for question in questions]
+
             if questions_formatted is None:
                 abort(404)
 
@@ -254,7 +251,7 @@ def create_app(test_config=None):
             "error" : 400,
             "message": "Bad request"
         }), 400
-        
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
