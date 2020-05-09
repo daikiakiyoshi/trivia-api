@@ -175,7 +175,7 @@ def create_app(test_config=None):
             return jsonify({
                 'success': True,
                 'questions': search_result_formatted,
-                'total_questions': len(Question.query.all()),
+                'total_questions': len(search_result_formatted),
                 'current_category': None
             })
 
@@ -201,15 +201,11 @@ def create_app(test_config=None):
             return jsonify({
                 'success': True,
                 'questions': questions_formatted,
-                'total_questions': len(Question.query.all()),
+                'total_questions': len(questions_formatted),
                 'current_category': Category.query.get(category_id).type
             })
         except:
           abort(422)
-
-
-
-
 
     '''
     @TODO:
@@ -222,6 +218,29 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     '''
+    @app.route('/quizzes', methods=['POST'])
+    def play_quiz():
+        body = request.get_json()
+        previous_questions = body.get('previous_questions', [])
+        category = body.get('quiz_category', None)
+        category_id = category['id']
+        try:
+            new_questions = Question.query.filter(Question.id.notin_(previous_questions))
+            if category_id == 0:
+                questions_filterby_category = new_questions.all()
+            else:
+                questions_filterby_category = new_questions.filter(Question.category == category_id).all()
+            if len(questions_filterby_category) > 0:
+                question_random = random.choice(questions_filterby_category)
+                question_formatted = question_random.format()
+            else:
+                question_formatted = False
+            return jsonify({
+                'success': True,
+                'question': question_formatted
+            })
+        except:
+            abort(422)
 
     '''
     @TODO:
