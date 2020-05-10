@@ -59,6 +59,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['current_category'], None)
         self.assertTrue(data['categories'])
 
+    def test_404_retrieve_questions(self):
+        res = self.client().get('/questions?page=1000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertTrue(data['message'], 'Not Found')
+
     def test_delete_question(self):
         res = self.client().delete('/questions/2') # id 2 exists in the test data
         data = json.loads(res.data)
@@ -70,13 +78,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['deleted'], 2)
         self.assertEqual(question, None)
 
-    def test_422_delete_queston(self):
+    def test_404_delete_queston(self):
         res = self.client().delete('/questions/1000')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], "Unprocessable entity")
+        self.assertEqual(data['message'], "Not Found")
 
     def test_create_question(self):
         res = self.client().post('/questions', json=self.new_question)
